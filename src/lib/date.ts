@@ -37,3 +37,11 @@ export function formatShortDate(date: string): string {
     day: "numeric",
   }).format(new Date(`${date}T12:00:00`));
 }
+
+export function formatShortDateWithYear(date: string): string {
+  return new Intl.DateTimeFormat(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(new Date(`${date}T12:00:00`));
+}

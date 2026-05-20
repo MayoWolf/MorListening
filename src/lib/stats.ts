@@ -335,18 +335,27 @@ export function calendarDays(streams: NormalizedStream[]): DailyTotal[] {
   return dailyTotals(streams);
 }
 
-export function currentListeningStreak(days: DailyTotal[], now = new Date()): number {
-  const daySet = new Set(days.filter((day) => day.msPlayed > 0).map((day) => day.date));
-  const cursor = new Date(now);
-  cursor.setHours(12, 0, 0, 0);
-  let streak = 0;
+export function longestListeningStreak(days: DailyTotal[]): number {
+  const activeDays = [...new Set(days.filter((day) => day.msPlayed > 0).map((day) => day.date))].sort();
+  if (activeDays.length === 0) return 0;
 
-  while (daySet.has(cursor.toISOString().slice(0, 10))) {
-    streak += 1;
-    cursor.setDate(cursor.getDate() - 1);
+  let longest = 1;
+  let current = 1;
+
+  for (let index = 1; index < activeDays.length; index += 1) {
+    const previous = new Date(`${activeDays[index - 1]}T12:00:00`);
+    const currentDay = new Date(`${activeDays[index]}T12:00:00`);
+    const diffDays = Math.round((currentDay.getTime() - previous.getTime()) / 86_400_000);
+
+    if (diffDays === 1) {
+      current += 1;
+      longest = Math.max(longest, current);
+    } else {
+      current = 1;
+    }
   }
 
-  return streak;
+  return longest;
 }
 
 export function skipRate(streams: NormalizedStream[]): number {

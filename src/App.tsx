@@ -21,15 +21,15 @@ import { CategoryBarChart, DailyChart, RankingCharts } from "./components/Charts
 import { ImportDropzone } from "./components/ImportDropzone";
 import { RangePicker } from "./components/RangePicker";
 import { Timeline } from "./components/Timeline";
-import { formatDay, formatDuration, formatShortDate } from "./lib/date";
+import { formatDay, formatDuration, formatShortDate, formatShortDateWithYear } from "./lib/date";
 import { parseSpotifyHistoryFiles } from "./lib/parseSpotifyHistory";
 import {
   bestDays,
   calendarDays,
-  currentListeningStreak,
   dailyTotals,
   filterByRange,
   hourlyTotals,
+  longestListeningStreak,
   platformTotals,
   skipRate,
   statStreams,
@@ -72,7 +72,7 @@ export function App() {
     const totalMs = countedStreams.reduce((sum, stream) => sum + stream.msPlayed, 0);
     const peakHour = [...hourRows].sort((a, b) => b.msPlayed - a.msPlayed)[0];
     const skipPercent = Math.round(skipRate(rangedStreams) * 100);
-    const streak = currentListeningStreak(dailyRows);
+    const streak = longestListeningStreak(dailyRows);
 
     return {
       totalMs,
@@ -176,7 +176,7 @@ export function App() {
           },
           {
             icon: <Flame size={18} />,
-            label: "Current streak",
+            label: "Longest streak",
             value: `${totals.streak}`,
             detail: totals.streak === 1 ? "1 listening day in a row" : `${totals.streak} listening days in a row`,
           },
@@ -497,7 +497,7 @@ function BestDays({ days }: { days: DailyTotal[] }) {
       <div className="bestDayGrid">
         {days.map((day) => (
           <article key={day.date}>
-            <span>{formatShortDate(day.date)}</span>
+            <span>{formatShortDateWithYear(day.date)}</span>
             <strong>{formatDuration(day.msPlayed)}</strong>
             <small>{day.streams} streams</small>
           </article>
@@ -703,7 +703,7 @@ function InsightsView({
     <section className="insightGrid">
       <InsightCard icon={<Sparkles />} label="Anchor artist" value={artists[0]?.artistName ?? "Unknown"} detail={`${formatDuration(artists[0]?.msPlayed ?? 0)} total`} />
       <InsightCard icon={<Activity />} label="Replay magnet" value={tracks[0]?.trackName ?? "Unknown"} detail={`${tracks[0]?.streams ?? 0} plays`} />
-      <InsightCard icon={<CalendarDays />} label="Heaviest day" value={bestDays[0] ? formatShortDate(bestDays[0].date) : "None"} detail={formatDuration(bestDays[0]?.msPlayed ?? 0)} />
+      <InsightCard icon={<CalendarDays />} label="Heaviest day" value={bestDays[0] ? formatShortDateWithYear(bestDays[0].date) : "None"} detail={formatDuration(bestDays[0]?.msPlayed ?? 0)} />
       <InsightCard icon={<Album />} label="Album world" value={albums[0]?.albumName ?? "Unknown"} detail={albums[0]?.artistName ?? "Unknown artist"} />
       <InsightCard icon={<BarChart3 />} label="Strongest weekday" value={strongestWeekday?.label ?? "None"} detail={formatDuration(strongestWeekday?.msPlayed ?? 0)} />
       <InsightCard icon={<Disc3 />} label="Main platform" value={strongestPlatform?.label ?? "None"} detail={formatDuration(strongestPlatform?.msPlayed ?? 0)} />
